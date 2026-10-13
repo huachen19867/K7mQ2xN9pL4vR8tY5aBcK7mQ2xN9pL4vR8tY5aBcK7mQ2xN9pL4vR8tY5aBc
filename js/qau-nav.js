@@ -32,10 +32,16 @@
 
   /* ---------- p3：假条右下角蓝色按钮 ---------- */
   function wireList() {
-    var btns = document.querySelectorAll('.m_matter_list .mmll_item .btn_item button.prview');
-    Array.prototype.forEach.call(btns, function (b) {
-      b.classList.add('qau-hotspot');
-      b.addEventListener('click', function () { go(ROUTES.p3.form); });
+    var list = document.querySelector('.m_matter_list');
+    if (!list) return;
+    Array.prototype.forEach.call(list.querySelectorAll('button.prview'), function (button) { button.classList.add('qau-hotspot'); });
+    // 委托事件兼容同步快照重建卡片；只传记录 ID，不把整条数据放入 URL。
+    list.addEventListener('click', function (event) {
+      var button = event.target.closest('button.prview');
+      if (!button || !list.contains(button)) return;
+      var card = button.closest('.mmll_item');
+      var id = card && card.getAttribute('data-qau-leave-id');
+      go(ROUTES.p3.form + (id ? '?id=' + encodeURIComponent(id) : ''));
     });
   }
 

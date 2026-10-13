@@ -4,7 +4,15 @@
 
 [在线演示](https://huachen19867.github.io/qau-ui-demo/)
 
-在首页点击「我的申请」，再点击申请卡片中的「查看表单」即可进入学生请销假页面。页面中的姓名、学号、申请记录和审批内容均为演示用示例数据，不代表真实人员、申请或审批结果。演示不提供登录、提交或审批服务，也不会向学校系统提交数据。
+在首页点击「我的申请」，再点击申请卡片中的「查看表单」即可进入对应记录的学生请销假页面。页面中的姓名、学号、申请记录和审批内容均为演示用示例数据，不代表真实人员、申请或审批结果，也不会向学校系统提交数据。
+
+## 新增假条
+
+[后台入口](https://huachen19867.github.io/qau-ui-demo/admin.html)连接私有飞书多维表格。在表格新增一行，填写标题、状态、申请时间及详情，勾选“发布”后进入公开列表。选择“已批准”时，卡片右上角显示绿色“批准”印章，在“已完成”分类中可查看。
+
+数据库为飞书 Base，管理员由飞书登录与资源权限管理。GitHub Actions 约每十分钟读取一次勾选发布的行，生成公开快照并部署；GitHub 调度可能延迟，也可在后台入口打开 Actions 手动运行。应用密钥只保存在 GitHub Secrets，浏览器只读 `leaves.json`。未发布的行不会公开，读取或校验出错时保留已有快照。
+
+`scripts/feishu-leaves-sync.mjs` 为云端同步后端，`.github/workflows/publish.yml` 为发布工作流。需要 Secrets `FEISHU_APP_ID`、`FEISHU_APP_SECRET` 和 vars `FEISHU_BASE_TOKEN`、`FEISHU_LEAVES_TABLE_ID`；不得将密钥写入 HTML、JavaScript 配置或仓库。网页只提供演示记录的展示，不含真实学校提交或审批服务。
 
 ## 内容配置
 

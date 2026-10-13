@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f7f8">
+  <title>演示假条管理入口</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: #17313c;
+      background: #f4f7f8;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      min-height: 100vh;
+      background:
+        radial-gradient(ellipse at 88% 0%, rgba(188, 226, 220, .48), transparent 38rem),
+        #f4f7f8;
+    }
+
+    .wrap {
+      width: min(100% - 36px, 760px);
+      margin: 0 auto;
+      padding: 34px 0 48px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: .02em;
+    }
+
+    .mark {
+      display: grid;
+      width: 36px;
+      height: 36px;
+      place-items: center;
+      border-radius: 12px;
+      background: #d9eee9;
+      color: #176b61;
+      font-size: 19px;
+    }
+
+    .badge {
+      padding: 7px 10px;
+      border: 1px solid #dce6e8;
+      border-radius: 999px;
+      color: #587079;
+      background: rgba(255, 255, 255, .72);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    main {
+      overflow: hidden;
+      border: 1px solid #e3eaec;
+      border-radius: 22px;
+      background: #fff;
+      box-shadow: 0 18px 48px rgba(31, 61, 70, .07);
+    }
+
+    .intro { padding: 34px 36px 27px; }
+
+    .eyebrow {
+      margin: 0 0 12px;
+      color: #318175;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .12em;
+    }
+
+    h1 {
+      margin: 0;
+      color: #18343e;
+      font-size: clamp(27px, 5vw, 36px);
+      line-height: 1.25;
+      letter-spacing: -.035em;
+    }
+
+    .lede {
+      max-width: 570px;
+      margin: 14px 0 0;
+      color: #5b7078;
+      font-size: 15px;
+      line-height: 1.8;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      padding: 0 36px 29px;
+    }
+
+    .button {
+      display: flex;
+      min-height: 58px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 17px;
+      border: 1px solid #dce7e8;
+      border-radius: 14px;
+      color: #17443f;
+      background: #f7fbfa;
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.4;
+      text-decoration: none;
+      transition: border-color .15s ease, background .15s ease, transform .15s ease;
+    }
+
+    .button:hover {
+      transform: translateY(-1px);
+      border-color: #a6ccc4;
+      background: #eef8f5;
+    }
+
+    .button.primary {
+      border-color: #176b61;
+      color: #fff;
+      background: #176b61;
+    }
+
+    .button.primary:hover { background: #125b53; }
+    .arrow { font-size: 18px; font-weight: 400; }
+
+    .divider { height: 1px; background: #edf1f2; }
+
+    .guide { padding: 26px 36px 32px; }
+
+    h2 {
+      margin: 0;
+      color: #1b3841;
+      font-size: 17px;
+      letter-spacing: -.01em;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin: 20px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .steps li {
+      min-width: 0;
+      padding-top: 13px;
+      border-top: 2px solid #dcece8;
+      color: #5b7078;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .steps strong {
+      display: block;
+      margin-bottom: 4px;
+      color: #24434c;
+      font-size: 14px;
+    }
+
+    .note {
+      margin: 23px 0 0;
+      padding: 14px 16px;
+      border-radius: 12px;
+      color: #526b73;
+      background: #f3f8f7;
+      font-size: 13px;
+      line-height: 1.75;
+    }
+
+    .note strong { color: #275c55; }
+
+    footer {
+      margin-top: 17px;
+      color: #73868c;
+      font-size: 12px;
+      line-height: 1.7;
+      text-align: center;
+    }
+
+    a:focus-visible {
+      outline: 3px solid #e19b55;
+      outline-offset: 3px;
+    }
+
+    @media (max-width: 580px) {
+      .wrap { width: min(100% - 24px, 480px); padding-top: 22px; }
+      header { margin-bottom: 21px; }
+      .intro { padding: 27px 22px 21px; }
+      .actions { grid-template-columns: 1fr; padding: 0 22px 23px; }
+      .guide { padding: 23px 22px 25px; }
+      .steps { grid-template-columns: 1fr; gap: 12px; }
+      .steps li { padding-top: 10px; }
+      footer { padding: 0 10px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand"><span class="mark" aria-hidden="true">假</span><span>QAU 请假演示</span></div>
+      <span class="badge">后台入口</span>
+    </header>
+
+    <main>
+      <section class="intro" aria-labelledby="page-title">
+        <p class="eyebrow">演示内容管理</p>
+        <h1 id="page-title">新增一条演示假条</h1>
+        <p class="lede">在私有飞书表格中添加一行，填写演示记录并勾选发布。你可以等待自动同步，也可以手动立即运行发布。</p>
+      </section>
+
+      <nav class="actions" aria-label="管理入口">
+        <a class="button primary" href="https://zcnl06gk5pj6.feishu.cn/base/JLp3bfoYkaqN0Ys9zUdcaZcln2b?table=tblTBy6DTEkNYOlV&amp;view=vewv0Zh1r9" target="_blank" rel="noopener noreferrer">
+          <span>打开请假记录表</span><span class="arrow" aria-hidden="true">↗</span>
+        </a>
+        <a class="button" href="https://github.com/huachen19867/qau-ui-demo/actions/workflows/publish.yml" target="_blank" rel="noopener noreferrer">
+          <span>前往 GitHub 手动立即发布</span><span class="arrow" aria-hidden="true">↗</span>
+        </a>
+      </nav>
+
+      <div class="divider" aria-hidden="true"></div>
+
+      <section class="guide" aria-labelledby="guide-title">
+        <h2 id="guide-title">发布前只需完成三步</h2>
+        <ol class="steps">
+          <li><strong>新增一行</strong>在飞书表格中只添加这条演示假条。</li>
+          <li><strong>填写记录</strong>填写标题、状态、申请时间和假条详情。</li>
+          <li><strong>勾选发布</strong>勾选“发布”后等待同步，或手动运行 GitHub 发布。</li>
+        </ol>
+        <p class="note"><strong>请留意：</strong>未勾选“发布”的记录不会公开。自动同步约每 10 分钟运行一次，GitHub 调度可能延迟；出错时会保留现有公开快照。状态为“已批准”的记录会归入前台“已完成”，卡片显示绿色“批准”标记。飞书与 GitHub 操作权限由各自的账号登录和权限控制。</p>
+      </section>
+    </main>
+
+    <footer>这里只管理静态演示内容。新增记录不会提交到学校系统，也不会发起学校审批。</footer>
+  </div>
+</body>
+</html>
