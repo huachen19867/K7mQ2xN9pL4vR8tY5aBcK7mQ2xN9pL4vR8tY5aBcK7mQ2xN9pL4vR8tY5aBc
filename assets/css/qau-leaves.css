@@ -8,3 +8,6 @@
 .qau-signature-attachment .qau-attachment-image{mix-blend-mode:multiply;filter:contrast(1.12);}
 .qau-signature-fitted{overflow:hidden;}
 .qau-signature-fitted .qau-attachment-image{position:absolute;max-width:none;height:auto;margin:0;}
+
+[data-key='HandSignature_177'] .qau-signature-attachment,[data-key='HandSignature_178'] .qau-signature-attachment{width:min(66.666667%,173.333333px);}
+
