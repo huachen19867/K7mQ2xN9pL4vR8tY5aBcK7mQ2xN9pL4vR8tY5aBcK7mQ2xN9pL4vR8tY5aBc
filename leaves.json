@@ -170,24 +170,6 @@
       }
     },
     {
-      "id": "leave-91a0e7f6990290d4eef10fea",
-      "title": "请假",
-      "status": "已完成",
-      "appliedAt": "2026-10-12 12:30:00",
-      "elapsed": "1分钟",
-      "order": 0,
-      "details": {
-        "studentName": "陈化",
-        "studentId": "20240201417",
-        "college": "机电工程学院",
-        "major": "测控技术与仪器",
-        "className": "测控2401",
-        "reason": "身体不适",
-        "startAt": "2026-10-12 12:30:00",
-        "endAt": "2026-10-13 12:30:00"
-      }
-    },
-    {
       "id": "leave-7141a430a98fa356b9d8b619",
       "title": "校园监控查阅申请审批表（学生版）",
       "status": "已完成",
