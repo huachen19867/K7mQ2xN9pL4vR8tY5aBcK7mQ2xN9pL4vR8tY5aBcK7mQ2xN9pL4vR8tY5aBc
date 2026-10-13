@@ -164,10 +164,10 @@
     if (value && row) row.style.display='';
     var radios=box.querySelectorAll('input[type="radio"]');
     if(radios.length) {
-      Array.prototype.forEach.call(radios,function(input){var label=input.closest('label')||input.parentElement.parentElement;var selected=label.textContent.trim()===value;input.checked=selected;input.disabled=true;label.classList.toggle('is-checked',selected);});
+      Array.prototype.forEach.call(radios,function(input){var label=input.closest('label')||input.parentElement.parentElement;var selected=input.value===value;input.checked=selected;input.disabled=true;label.classList.toggle('is-checked',selected);var icon=label.querySelector('i.icon');if(icon){icon.classList.toggle('icondanxuanxuanzhongcopy-',selected);icon.classList.toggle('icondanxuanxuanzhong-copy',!selected);}});
       return;
     }
-    var target = box.querySelector('textarea, input:not([type="radio"]):not([type="checkbox"])') || box.querySelector('.dplugin-content-wrap, .doneplugin-value, .plugin-data, .dplugin-mobile > span, .dplugin-mobile');
+    var target = box.querySelector('input.el-input__inner') || box.querySelector('textarea, input:not([type="radio"]):not([type="checkbox"])') || box.querySelector('.dplugin-content-wrap, .doneplugin-value, .plugin-data, .dplugin-mobile > span, .dplugin-mobile');
     if (!target) {target=document.createElement('div');target.className='qau-field-value';box.appendChild(target);}
     target.removeAttribute('data-qau');
     if (target.matches('input, textarea')) {target.value=value;target.readOnly=true;}
