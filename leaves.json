@@ -54,13 +54,21 @@
           "name": "迟名龙",
           "opinion": "演示意见：请填写班主任意见。",
           "date": "",
-          "signature": null
+          "signature": {
+            "url": "assets/uploads/6f3683b65fbc9f3da46a2aaaa2d0c09cc9cb54764ab510a231bd06a667c60274.jpg",
+            "name": "homeroom-teacher.jpg",
+            "type": "image/jpeg"
+          }
         },
         "counselor": {
           "name": "刘孟杰",
           "opinion": "演示意见：请填写辅导员意见。",
           "date": "",
-          "signature": null
+          "signature": {
+            "url": "assets/uploads/884499b43ffb6a8f66243e7f9e374293be0d6a3b384c1c0581fc85c94293e69a.png",
+            "name": "counselor.png",
+            "type": "image/png"
+          }
         },
         "academicSecretary": {
           "name": "",

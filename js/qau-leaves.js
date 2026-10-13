@@ -177,14 +177,29 @@
     var box=document.querySelector('[data-key="'+key+'"]');if(!box)return;
     var holder=box.querySelector('.dhandsign > div, .dhandsign') || box.querySelector('.dplugin-mobile') || box;
     holder.textContent='';
-    if(name){var text=document.createElement('span');text.className='qau-signature-name';text.textContent=name;holder.appendChild(text);}
+    var signature=key!=='Ximage_146';
+    if(name&&!items.length){var text=document.createElement('span');text.className='qau-signature-name';text.textContent=name;holder.appendChild(text);}
     items.forEach(function(item){
       var link=document.createElement('a');link.href=item.url;link.target='_blank';link.rel='noopener noreferrer';link.className='qau-attachment';
-      if(item.type.indexOf('image/')===0){var image=document.createElement('img');image.src=item.url;image.alt=item.name;image.className='qau-attachment-image';link.appendChild(image);}else link.textContent=item.name;
+      if(item.type.indexOf('image/')===0){var image=document.createElement('img');image.alt=signature?(name+'：演示用授权签字图片'):item.name;image.className='qau-attachment-image';if(signature){link.classList.add('qau-signature-attachment');image.onload=function(){fitSignature(image,link);};}image.src=item.url;link.appendChild(image);}else link.textContent=item.name;
       holder.appendChild(link);
     });
     var row=box.closest('.mobile_up_down_style') || box.closest('.plugin-allbox')?.parentElement;
     if((items.length||name)&&row)row.style.display='';
+  }
+  function fitSignature(image,link) {
+    // Analyze margins only. Original image bytes and handwriting are unchanged.
+    try {
+      var scale=Math.min(1,1400/image.naturalWidth,1400/image.naturalHeight),canvas=document.createElement('canvas');
+      canvas.width=Math.ceil(image.naturalWidth*scale);canvas.height=Math.ceil(image.naturalHeight*scale);
+      var ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.drawImage(image,0,0,canvas.width,canvas.height);
+      var data=ctx.getImageData(0,0,canvas.width,canvas.height).data,minX=canvas.width,minY=canvas.height,maxX=0,maxY=0,count=0;
+      for(var y=0;y<canvas.height;y++)for(var x=0;x<canvas.width;x++){var i=(y*canvas.width+x)*4;if(data[i+3]>128&&Math.max(data[i],data[i+1],data[i+2])<170){minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y);count++;}}
+      if(count<30||maxX<=minX||maxY<=minY)return;
+      var pad=Math.max(8,Math.round(canvas.width*.025));minX=Math.max(0,minX-pad);minY=Math.max(0,minY-pad);maxX=Math.min(canvas.width,maxX+pad);maxY=Math.min(canvas.height,maxY+pad);
+      var width=maxX-minX,height=maxY-minY;link.style.aspectRatio=width+'/'+height;
+      image.style.width=(canvas.width/width*100)+'%';image.style.left=(-minX/width*100)+'%';image.style.top=(-minY/height*100)+'%';link.classList.add('qau-signature-fitted');
+    } catch(error) { /* Show the unchanged original when margin analysis is unavailable. */ }
   }
   function fillApprovals(record) {
     Object.keys(approvalFields).forEach(function(role){var a=record.approvals[role],keys=approvalFields[role];field(keys[0],a.opinion);field(keys[2],a.date);renderMedia(keys[1],a.signature?[a.signature]:[],a.name);});
