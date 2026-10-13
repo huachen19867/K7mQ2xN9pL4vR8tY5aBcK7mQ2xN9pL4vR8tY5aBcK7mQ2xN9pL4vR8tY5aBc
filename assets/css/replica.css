@@ -1,0 +1,57 @@
+/* 复刻层补充样式：只放源站样式表没有、而我们的复刻页面需要的东西。
+   原则是不动任何源站规则，避免破坏像素一致。 */
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+/* 注意：源站 404 的图（如首页四个快捷入口图标）在原始页面里是
+   display:block + height:0，仍然贡献 5px 的 margin-bottom。
+   这里绝不能用 display:none 隐藏，否则整页会比原页面矮 5px。 */
+
+/* 可点区域给一点触感反馈，不改变布局尺寸 */
+.qau-hotspot {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.qau-hotspot:active {
+  opacity: 0.86;
+}
+
+/* 顶部「标题 + 域名」条：源站没有，是手机 App/浏览器自己画的。
+   默认关闭（content.json 的 appBar.show），打开后页面整体下移相应高度。 */
+.qau-appbar {
+  position: relative;
+  z-index: 1000;
+  background: #ededed;
+  color: #1b1b1b;
+  text-align: center;
+}
+
+.qau-appbar-status {
+  height: 44px;
+}
+
+.qau-appbar-title {
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 24px;
+  padding-top: 12px;
+  font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+.qau-appbar-domain {
+  font-size: 12px;
+  line-height: 18px;
+  color: #8a8a8a;
+  padding: 4px 0 10px;
+  font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+body.qau-has-appbar .m_footer_tab,
+body.qau-has-appbar .van-tabbar--fixed {
+  /* 加了顶部条后底部固定栏仍贴视口底，无需改动，仅保留钩子便于以后微调 */
+}
