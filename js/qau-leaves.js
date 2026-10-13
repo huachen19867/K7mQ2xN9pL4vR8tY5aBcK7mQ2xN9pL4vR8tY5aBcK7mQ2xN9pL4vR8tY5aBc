@@ -8,9 +8,15 @@
   var fields = {
     studentName: 'User_32', studentId: 'User_33', college: 'Input_188',
     major: 'User_35', className: 'User_190', reason: 'MultiInput_42',
-    startAt: 'Calendar_44', endAt: 'Calendar_45'
+    startAt: 'Calendar_44', endAt: 'Calendar_45',
+    contactPhone: "User_36", parentName: "Input_37", parentPhone: "Input_38", dorm: "Input_40", reasonType: "SelectV2_150", reasonDetail: "Input_161", days: "Count_46", leaveType: "Radio_219", stayOnCampus: "Radio_254", courses: "SelectV2_168", emergencyContact: "Input_47", emergencyPhone: "Input_48", returnAt: "Calendar_164", identityType: "User_198", location: "ClockIn_165", cardMode: "SelectV2_247", gateEntryAt: "Input_204", gateName: "Input_239"
   };
 
+  var approvalFields = {"classLeader":["MultiInput_115","User_196","Calendar_119"],"homeroomTeacher":["MultiInput_175","HandSignature_177","Calendar_174"],"counselor":["MultiInput_49","HandSignature_178","Calendar_68"],"academicSecretary":["MultiInput_213","HandSignature_215","Calendar_217"],"deputyPartySecretary":["MultiInput_50","HandSignature_179","Calendar_69"],"viceDean":["MultiInput_256","HandSignature_258","Calendar_260"],"dean":["MultiInput_185","HandSignature_186","Calendar_187"]};
+  function media(value) {
+    if (!value || typeof value.url !== 'string' || !/^assets\/uploads\/[a-f0-9]{64}\.(png|jpg|webp|pdf)$/.test(value.url)) return null;
+    return {url:value.url, name:string(value.name || '附件'), type:string(value.type)};
+  }
   function string(value) { return value == null ? '' : String(value); }
 
   function validate(data) {
@@ -29,6 +35,12 @@
         details: {}
       };
       Object.keys(fields).forEach(function (name) { clean.details[name] = string(detail[name]); });
+      clean.details.proofs = Array.isArray(detail.proofs) ? detail.proofs.map(media).filter(Boolean) : [];
+      clean.approvals = {};
+      Object.keys(approvalFields).forEach(function(role) {
+        var a = record.approvals && record.approvals[role] || {};
+        clean.approvals[role] = {name:string(a.name),opinion:string(a.opinion),date:string(a.date),signature:media(a.signature)};
+      });
       return clean;
     }).sort(function (a, b) { return a.order - b.order; });
   }
@@ -147,11 +159,36 @@
   function field(key, value) {
     var box = document.querySelector('[data-key="' + key + '"]');
     if (!box) return;
-    var target = box.querySelector('input, textarea') || box.querySelector('.doneplugin-value, .plugin-data, .dplugin-mobile > span');
-    if (!target) return;
+    value=string(value);
+    var row=box.closest('.mobile_up_down_style') || box.closest('.plugin-allbox')?.parentElement;
+    if (value && row) row.style.display='';
+    var radios=box.querySelectorAll('input[type="radio"]');
+    if(radios.length) {
+      Array.prototype.forEach.call(radios,function(input){var label=input.closest('label')||input.parentElement.parentElement;var selected=label.textContent.trim()===value;input.checked=selected;input.disabled=true;label.classList.toggle('is-checked',selected);});
+      return;
+    }
+    var target = box.querySelector('textarea, input:not([type="radio"]):not([type="checkbox"])') || box.querySelector('.dplugin-content-wrap, .doneplugin-value, .plugin-data, .dplugin-mobile > span, .dplugin-mobile');
+    if (!target) {target=document.createElement('div');target.className='qau-field-value';box.appendChild(target);}
     target.removeAttribute('data-qau');
-    if (target.matches('input, textarea')) target.value = value;
-    else target.textContent = value;
+    if (target.matches('input, textarea')) {target.value=value;target.readOnly=true;}
+    else target.textContent=value;
+  }
+  function renderMedia(key,items,name) {
+    var box=document.querySelector('[data-key="'+key+'"]');if(!box)return;
+    var holder=box.querySelector('.dhandsign > div, .dhandsign') || box.querySelector('.dplugin-mobile') || box;
+    holder.textContent='';
+    if(name){var text=document.createElement('span');text.className='qau-signature-name';text.textContent=name;holder.appendChild(text);}
+    items.forEach(function(item){
+      var link=document.createElement('a');link.href=item.url;link.target='_blank';link.rel='noopener noreferrer';link.className='qau-attachment';
+      if(item.type.indexOf('image/')===0){var image=document.createElement('img');image.src=item.url;image.alt=item.name;image.className='qau-attachment-image';link.appendChild(image);}else link.textContent=item.name;
+      holder.appendChild(link);
+    });
+    var row=box.closest('.mobile_up_down_style') || box.closest('.plugin-allbox')?.parentElement;
+    if((items.length||name)&&row)row.style.display='';
+  }
+  function fillApprovals(record) {
+    Object.keys(approvalFields).forEach(function(role){var a=record.approvals[role],keys=approvalFields[role];field(keys[0],a.opinion);field(keys[2],a.date);renderMedia(keys[1],a.signature?[a.signature]:[],a.name);});
+    renderMedia('Ximage_146',record.details.proofs || [],'');
   }
 
   function formPage() {
@@ -172,6 +209,7 @@
       if (!record) { hint.textContent = '未找到这条演示申请，请返回列表重新选择。'; return; }
       Object.keys(fields).forEach(function (name) { field(fields[name], record.details[name]); });
       field('Calendar_234', record.appliedAt);
+      fillApprovals(record);
       document.documentElement.setAttribute('data-qau-leave-id', record.id);
       if (form) form.hidden = false;
       hint.remove();

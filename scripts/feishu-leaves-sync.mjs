@@ -10,10 +10,14 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { randomUUID, createHash } from 'node:crypto';
+import { prepareAttachments, downloadAttachment } from './base-attachments.mjs';
 
 const ORIGIN = 'https://open.feishu.cn';
 const ACCOUNTS_ORIGIN = 'https://accounts.feishu.cn';
 const LEAVE_FIELDS = ['标题', '状态', '申请时间', '总耗时长', '姓名（示例）', '学号（示例）', '学院', '专业', '班级', '请假事由', '请假开始时间', '请假结束时间', '发布', '排序'];
+export const APPROVAL_ROLES = { classLeader: '班级负责人', homeroomTeacher: '班主任', counselor: '辅导员', academicSecretary: '教学秘书', deputyPartySecretary: '学院副书记', viceDean: '学院副院长', dean: '院长或党委书记' };
+const DETAIL_FIELDS = { contactPhone: '联系电话', parentName: '家长姓名', parentPhone: '家长联系电话', dorm: '宿舍号', reasonType: '外出事由（类别）', reasonDetail: '外出事由详情', leaveType: '请假类型', stayOnCampus: '请假期间是否住校', courses: '请假课程', emergencyContact: '紧急联系人', emergencyPhone: '紧急联系人电话', identityType: '身份类别',location:'位置打卡',cardMode:'刷卡/刷脸',gateName:'入校校门以及卡机' };
+const FULL_FIELDS = [...LEAVE_FIELDS, ...Object.values(DETAIL_FIELDS), '请假天数', '上传凭证', '返校时间','进闸机时间', ...Object.values(APPROVAL_ROLES).flatMap(role => ['审批意见', '姓名', '签字日期', '签字图片'].map(suffix => role + suffix))];
 
 // Only fixed messages are reported. Do not echo API messages, response bodies,
 // request URLs, credentials, record values, or underlying fetch exceptions.
@@ -36,7 +40,7 @@ export function readConfig(env = process.env) {
 }
 
 export function createClient(config, { fetchImpl = fetch, sleep = defaultSleep, maxRetries = 4 } = {}) {
-  const sensitive = new Set([config.appId, config.appSecret]);
+  const sensitive = new Set([config.appId, config.appSecret, config.baseToken]);
   let tenantToken;
   async function request(apiPath, { body, auth = true, oauth = false } = {}) {
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
@@ -79,6 +83,17 @@ export function createClient(config, { fetchImpl = fetch, sleep = defaultSleep, 
   }
   return {
     sensitive,
+    async attachmentMetadata(recordId) {
+      if (!tenantToken) fail('NOT_AUTHENTICATED');
+      const payload = await request(`/open-apis/base/v3/bases/${encodeURIComponent(config.baseToken)}/tables/${encodeURIComponent(config.leavesTableId)}/get_attachments`, { body: { record_id_list: [recordId] } });
+      if (!isObject(payload.data?.attachments)) fail('INVALID_ATTACHMENT_METADATA');
+      return payload.data.attachments[recordId] ?? {};
+    },
+    async download(item) {
+      if (!tenantToken) fail('NOT_AUTHENTICATED');
+      sensitive.add(item.file_token);
+      return downloadAttachment(item, { fetchImpl, token: tenantToken, fail });
+    },
     async authenticate() {
       const payload = await request('/oauth/v3/token', { auth: false, oauth: true, body: { grant_type: 'client_credentials', client_id: config.appId, client_secret: config.appSecret } });
       if (typeof payload.access_token !== 'string' || !payload.access_token || typeof payload.expires_in !== 'number' || payload.expires_in <= 0) fail('INVALID_AUTH_RESPONSE');
@@ -111,7 +126,7 @@ export function parsePage(data) {
     schema = JSON.stringify([fields, ids, types, data.timezone]);
     records = rows.map((row, index) => {
       if (!Array.isArray(row) || row.length !== fields.length) fail('INVALID_MATRIX');
-      return { record_id: recordIds[index], fields: Object.fromEntries(fields.map((field, position) => [field, row[position]])), timezone: data.timezone };
+      return { record_id: recordIds[index], fields: Object.fromEntries(fields.map((field, position) => [field, row[position]])), fieldIds: Object.fromEntries(fields.map((field, position) => [field, ids[position]])), timezone: data.timezone };
     });
   } else {
     const items = Array.isArray(data.items) ? data.items : data.records;
@@ -186,7 +201,7 @@ function status(value) {
   return result;
 }
 
-export function buildPublicContent(records, sensitive = []) {
+export function buildPublicContent(records, sensitive = [], attachments = new Map()) {
   const published = [];
   for (const record of records) {
     const fields = record.fields;
@@ -196,6 +211,15 @@ export function buildPublicContent(records, sensitive = []) {
     const order = fields['排序'] ?? Number.MAX_SAFE_INTEGER;
     if (typeof order !== 'number' || !Number.isFinite(order)) fail('INVALID_ORDER');
     const optionalDate = value => value === null || value === undefined || value === '' ? '' : dateInShanghai(value, record.timezone);
+    const days = fields['请假天数'] ?? null;
+    if (days !== null && (typeof days !== 'number' || !Number.isFinite(days) || days < 0)) fail('INVALID_LEAVE_DAYS');
+    const media = attachments.get(record.record_id) ?? {};
+    const approvals = Object.fromEntries(Object.entries(APPROVAL_ROLES).map(([key, role]) => [key, {
+      name: text(fields[`${role}姓名`], { max: 100 }),
+      opinion: text(fields[`${role}审批意见`]),
+      date: optionalDate(fields[`${role}签字日期`]),
+      signature: media[`${role}签字图片`]?.[0] ?? null
+    }]));
     published.push({
       id: `leave-${createHash('sha256').update(record.record_id).digest('hex').slice(0, 24)}`,
       title: text(fields['标题'], { required: true, max: 300 }),
@@ -211,8 +235,13 @@ export function buildPublicContent(records, sensitive = []) {
         className: text(fields['班级'], { max: 200 }) || '示例班级',
         reason: text(fields['请假事由'], { max: 6000 }) || '演示请假事由',
         startAt: optionalDate(fields['请假开始时间']),
-        endAt: optionalDate(fields['请假结束时间'])
-      }
+        endAt: optionalDate(fields['请假结束时间']),
+        ...Object.fromEntries(Object.entries(DETAIL_FIELDS).map(([key, field]) => [key, text(fields[field])])),
+        days,
+        proofs: media['上传凭证'] ?? [],
+        returnAt: optionalDate(fields['返校时间']),gateEntryAt:optionalDate(fields['进闸机时间'])
+      },
+      approvals
     });
   }
   published.sort((a, b) => a.order - b.order || b.appliedAt.localeCompare(a.appliedAt) || a.id.localeCompare(b.id));
@@ -254,8 +283,11 @@ export async function saveContent(outputDir, content) {
 export async function runSync({ env = process.env, fetchImpl, sleep } = {}) {
   const config = readConfig(env), client = createClient(config, { fetchImpl, sleep });
   await client.authenticate();
-  const records = await listAllRecords(client, config.leavesTableId, { expectedFields: LEAVE_FIELDS });
-  const content = buildPublicContent(records, client.sensitive);
+  const records = await listAllRecords(client, config.leavesTableId, { expectedFields: FULL_FIELDS });
+  // Validate every public scalar before downloading or installing any assets.
+  buildPublicContent(records, client.sensitive);
+  const attachments = await prepareAttachments(records, client, config.outputDir, APPROVAL_ROLES, fail);
+  const content = buildPublicContent(records, client.sensitive, attachments);
   const changed = await saveContent(config.outputDir, content);
   return { changed, publishedCount: content.records.length };
 }

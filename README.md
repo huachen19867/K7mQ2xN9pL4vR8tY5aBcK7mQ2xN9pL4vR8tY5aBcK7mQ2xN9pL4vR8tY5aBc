@@ -12,6 +12,8 @@
 
 数据库为飞书 Base，管理员由飞书登录与资源权限管理。GitHub Actions 约每十分钟读取一次勾选发布的行，生成公开快照并部署；GitHub 调度可能延迟，也可在后台入口打开 Actions 手动运行。应用密钥只保存在 GitHub Secrets，浏览器只读 `leaves.json`。未发布的行不会公开，读取或校验出错时保留已有快照。
 
+后台表格包含完整详情字段与七级审批信息：联系人、家长、事由类别/详情、请假课程、凭证附件，以及各级意见、姓名、日期和签字图片。班主任姓名为“迟名龙”，辅导员姓名为“刘孟杰”；普通文字姓名不是手写签字。签字图片由管理员上传有权使用的现有图片，程序不生成笔迹。凭证支持图片/PDF（每个最大10MB），签字仅图片。勾选发布后附件随演示记录公开，Git 提交历史可能保留既往公开文件。
+
 `scripts/feishu-leaves-sync.mjs` 为云端同步后端，`.github/workflows/publish.yml` 为发布工作流。需要 Secrets `FEISHU_APP_ID`、`FEISHU_APP_SECRET` 和 vars `FEISHU_BASE_TOKEN`、`FEISHU_LEAVES_TABLE_ID`；不得将密钥写入 HTML、JavaScript 配置或仓库。网页只提供演示记录的展示，不含真实学校提交或审批服务。
 
 ## 内容配置

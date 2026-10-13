@@ -2,3 +2,5 @@
 .qau-leaves-message { margin: 0; padding: 24px 12px; color: #878787; text-align: center; font-size: 14px; line-height: 22px; }
 .qau-leaves-message[hidden], .mml_list[hidden], #pubilcForms[hidden] { display: none; }
 .m_matter_list .mmll_item_title .qau-leave-status { padding: 14px 0; text-align: center; font-size: 12px; color: #878787; }
+
+.qau-field-value,.qau-signature-name{font:14px/22px "Microsoft YaHei",sans-serif;color:#878787;white-space:pre-wrap}.qau-signature-name{display:block;text-align:center}.qau-attachment{display:block;padding:8px 0;color:#6486ed;font-size:14px}.qau-attachment-image{display:block;max-width:100%;height:auto;margin:auto}
