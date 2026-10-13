@@ -88,9 +88,8 @@
       if (values[1]) values[1].textContent = record.elapsed;
       var image = card.querySelector('img.status');
       if (image && (record.status === '已完成' || record.status === '已撤销' || record.status === '已批准')) {
-        image.src = record.status === '已批准' ? 'assets/img/qau-approved.svg' :
-          record.status === '已完成' ? 'assets/img/complete.f02c33ab.png' : 'assets/img/undo_chapter.f53b2725.png';
-        image.alt = record.status;
+        image.src = record.status === '已撤销' ? 'assets/img/undo_chapter.f53b2725.png' : 'assets/img/complete.f02c33ab.png';
+        image.alt = record.status === '已批准' ? '已完成' : record.status;
       } else if (image) {
         var label = document.createElement('span');
         label.className = 'status qau-leave-status';
