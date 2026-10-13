@@ -6,7 +6,7 @@ window.QAU_LEAVES = {
       "id": "leave-00b2b0eb167585fc2677339f",
       "title": "身体不适请假",
       "status": "已批准",
-      "appliedAt": "2026-10-13 12:11:36",
+      "appliedAt": "2026-10-12 12:11:00",
       "elapsed": "50分钟",
       "order": 0,
       "details": {
