@@ -167,7 +167,15 @@
       Array.prototype.forEach.call(radios,function(input){var label=input.closest('label')||input.parentElement.parentElement;var selected=input.value===value;input.checked=selected;input.disabled=true;label.classList.toggle('is-checked',selected);var icon=label.querySelector('i.icon');if(icon){icon.classList.toggle('icondanxuanxuanzhongcopy-',selected);icon.classList.toggle('icondanxuanxuanzhong-copy',!selected);}});
       return;
     }
-    var target = box.querySelector('input.el-input__inner') || box.querySelector('textarea, input:not([type="radio"]):not([type="checkbox"])') || box.querySelector('.dplugin-content-wrap, .doneplugin-value, .plugin-data, .dplugin-mobile > span, .dplugin-mobile');
+    // 取值容器必须按优先级逐个查找：querySelector 的选择器列表是“按文档顺序取第一个命中”，
+    // 而 .dplugin-mobile 是 .dplugin-content-wrap / .doneplugin-value 的父元素，
+    // 写成列表会永远命中父容器；再对它 textContent=value 会把带内联灰样式（rgb(135,135,135)）
+    // 的子元素一起抹掉，文字就继承外层 #333 变成黑色——审批意见、姓名、学号等值都因此变黑。
+    // 原始页面里这些已填值都是灰色（见 exports/2026-10-13/p4/page.html 的 doneplugin-value）。
+    var CANDIDATES=['input.el-input__inner','textarea','input:not([type="radio"]):not([type="checkbox"])',
+      '.dplugin-content-wrap','.doneplugin-value','.plugin-data','.dplugin-mobile > span','.dplugin-mobile'];
+    var target=null;
+    for(var ci=0;ci<CANDIDATES.length;ci++){var found=box.querySelector(CANDIDATES[ci]);if(found){target=found;break;}}
     if (!target) {target=document.createElement('div');target.className='qau-field-value';box.appendChild(target);}
     target.removeAttribute('data-qau');
     if (target.matches('input, textarea')) {target.value=value;target.readOnly=true;}
